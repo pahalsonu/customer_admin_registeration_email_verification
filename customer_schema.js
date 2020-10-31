@@ -29,9 +29,13 @@ const userSchema = new Schema({
         verified: {
         type: Boolean,
         default: false
-    }  
+    },
+    emailtoken: {
+        type: String,
+          }
+
 
 });
 
 
-module.exports = mongoose.model("test", userSchema, "pahal_users2");
+module.exports = mongoose.model("test", userSchema, "pahal_users");

@@ -29,7 +29,10 @@ const userSchema = new Schema({
     verified: {
         type: Boolean,
         default: false
-    }
+    },
+    emailtoken: {
+        type: String,
+          }
    
 
 });
