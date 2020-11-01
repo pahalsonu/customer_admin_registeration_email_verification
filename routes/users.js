@@ -73,19 +73,20 @@ router.post('/register', [
 
                 res.status(200).json({ "Success": "New user is saved as Customer, please veify yourself with email verification" });
                 let transporter = nodemailer.createTransport({
-
-                    host: "mail.pahalsonu.com",
+                    service : 'gmail',
+                    host: "smtp.gmail.com",
                     port: 465,
                     secure: true,
+                   
                     auth: {
                         user: config.EMAIL_USERNAME,
                         pass: config.EMAIL_PASSWORD,
                     }
                 });
-                console.log("mail")
+                
                 let some = "pahalsonu@gmail.com"
                 transporter.sendMail({
-                    from: '"pahal" <pahal@pahalsonu.com>', // sender address
+                    from: '"pahal" <pahalsonu10@gmail.com>', // sender address
                     to: `pahalsonu@gmail.com, ${some}`, // list of receivers
                     subject: `Hello Sonu! Nodamailer Test`, // Subject line
                     html: `
@@ -131,7 +132,7 @@ router.post('/register', [
                 res.status(200).json({ "Success": "New user is saved as Customer, please veify yourself with email verification" });
                 let transporter = nodemailer.createTransport({
 
-                    host: "mail.pahalsonu.com",
+                    host: "pahalsonu@gmail.com",
                     port: 465,
                     secure: true,
                     auth: {
@@ -142,7 +143,7 @@ router.post('/register', [
                 console.log("mail")
                 let some = "pahalsonu@gmail.com"
                 transporter.sendMail({
-                    from: '"pahal" <pahal@pahalsonu.com>', // sender address
+                    from: '"pahal" <pahalsonu10@gmail.com>', // sender address
                     to: `pahalsonu@gmail.com, ${some}`, // list of receivers
                     subject: `Hello Sonu! Nodamailer Test`, // Subject line
                     html: `
