@@ -30,7 +30,7 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
-    emailtoken: {
+    accessToken: {
         type: String,
           }
 

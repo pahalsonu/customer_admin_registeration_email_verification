@@ -38,110 +38,124 @@ router.post('/register', [
             if (adminEmail) {
                 res.status(401).json({ "Error": "This user is already existed as admin " })
             };
-          
-           
+
+
             // if (role != customer || role != admin) {
             //     return res.status(401).json({ "Error": "please specify correct role" });
             // };
             if (role == "customer") {
-                
+
                 const saltRounds = 10;
                 const salt = await bcrypt.genSalt(saltRounds);
                 password = await bcrypt.hash(password, salt);
-                const emailtoken = randomString.generate();
                 const userData = {
-                    email, password, firstName,  role, emailtoken
+                    email, password, firstName, role
                 };
+
                 const newUser = new Customer(userData);
 
-                const key = config.secret_key;
+                await newUser.save();
+
                 const payload = {
                     user: {
-                      id: newUser._id,
-                      role : newUser.role,
-                      email : newUser.email
+                        id: newUser._id,
+                        role: newUser.role,
+                        email: newUser.email
                     },
                 }
+                const key = config.secret_key;
+
                 const accessToken = await jwt.sign(payload, key, { expiresIn: 6000 });
-                
-                
-                await newUser.save();
-    
-                res.status(200).json({ "Success" : "New user is saved as Customer, please veify yourself with email verification" });
+                console.log(accessToken)
+
+
+
+
+                res.status(200).json({ "Success": "New user is saved as Customer, please veify yourself with email verification" });
                 let transporter = nodemailer.createTransport({
 
                     host: "mail.pahalsonu.com",
                     port: 465,
                     secure: true,
                     auth: {
-                      user: config.EMAIL_USERNAME,
-                      pass: config.EMAIL_PASSWORD,
+                        user: config.EMAIL_USERNAME,
+                        pass: config.EMAIL_PASSWORD,
                     }
-                  });
-                               console.log("mail") 
-                               let some = "pahalsonu@gmail.com"   
-                  transporter.sendMail({
+                });
+                console.log("mail")
+                let some = "pahalsonu@gmail.com"
+                transporter.sendMail({
                     from: '"pahal" <pahal@pahalsonu.com>', // sender address
                     to: `pahalsonu@gmail.com, ${some}`, // list of receivers
-                    subject: `Hello ${some}! Nodamailer Test`, // Subject line
+                    subject: `Hello Sonu! Nodamailer Test`, // Subject line
                     html: `
-                    <p> Thank you for Signing up with us! Here is the Link to verify your email id href=localhost:5000/users/verify/${emailtoken}
+                    <p> Thank you for Signing up with us! Here is the Link to verify your email id href=localhost:5000/users/verify/${accessToken}
                     </p>
                   `,
-                  }).then((info) => {
+                }).then((info) => {
                     console.log("Message sent: %s", info.messageId);
                     res.redirect('/');
-                  })
-            };
+                }
+                ).catch((err) => {
+                    console.error(err)
+                })
+            }
             if (role == "admin") {
-                
+
                 const saltRounds = 10;
                 const salt = await bcrypt.genSalt(saltRounds);
                 password = await bcrypt.hash(password, salt);
-                const emailtoken = randomString.generate();
                 const userData = {
-                    email, password, firstName,  role, emailtoken
+                    email, password, firstName, role
                 };
+
                 const newUser = new Admin(userData);
 
-                const key = config.secret_key;
+                await newUser.save();
+
                 const payload = {
                     user: {
-                      id: newUser._id,
-                      role : newUser.role,
-                      email : newUser.email
+                        id: newUser._id,
+                        role: newUser.role,
+                        email: newUser.email
                     },
                 }
+                const key = config.secret_key;
+
                 const accessToken = await jwt.sign(payload, key, { expiresIn: 6000 });
-                
-                
-                await newUser.save();
-    
-                res.status(200).json({ "Success" : "New user is saved as Admin, please veify yourself with email verification" });
+                console.log(accessToken)
+
+
+
+
+                res.status(200).json({ "Success": "New user is saved as Customer, please veify yourself with email verification" });
                 let transporter = nodemailer.createTransport({
 
                     host: "mail.pahalsonu.com",
                     port: 465,
                     secure: true,
                     auth: {
-                      user: config.EMAIL_USERNAME,
-                      pass: config.EMAIL_PASSWORD,
+                        user: config.EMAIL_USERNAME,
+                        pass: config.EMAIL_PASSWORD,
                     }
-                  });
-                               console.log("mail") 
-                               let some = "pahalsonu@gmail.com"   
-                  transporter.sendMail({
+                });
+                console.log("mail")
+                let some = "pahalsonu@gmail.com"
+                transporter.sendMail({
                     from: '"pahal" <pahal@pahalsonu.com>', // sender address
                     to: `pahalsonu@gmail.com, ${some}`, // list of receivers
-                    subject: `Hello ${some}! Nodamailer Test`, // Subject line
+                    subject: `Hello Sonu! Nodamailer Test`, // Subject line
                     html: `
-                    <p> Thank you for Signing up with us! Here is the Link to verify your email id href=localhost:5000/users/verify/${emailtoken}
+                    <p> Thank you for Signing up with us! Here is the Link to verify your email id href=localhost:5000/users/verify/${accessToken}
                     </p>
                   `,
-                  }).then((info) => {
+                }).then((info) => {
                     console.log("Message sent: %s", info.messageId);
                     res.redirect('/');
-                  })
+                }
+                ).catch((err) => {
+                    console.error(err)
+                })
             }
 
 
@@ -153,31 +167,36 @@ router.post('/register', [
         }
     });
 
-    router.all('/verify/:emailtoken', async (req, res) => {
-        try {
-                    
-         const customer = await Customer.findOneAndUpdate(
-            { emailtoken: req.params.emailtoken},
+router.all('/verify/:accessToken', async (req, res) => {
+
+    try {
+        console.log(req.params.accessToken)
+
+        let accessTokenPayload = jwt.decode(req.params.accessToken)
+
+        let email = accessTokenPayload.user.email
+        const customer = await Customer.findOneAndUpdate(
+            { email },
             { $set: { verified: true } }
-          );
-         if(customer){
+        );
+        if (customer) {
             res.send(`<h1>Email Verification is Successfull for user account as customer</h1>`)
-         }
-            
-            const admin = await Admin.findOneAndUpdate(
-                { emailtoken: req.params.emailtoken},
-                { $set: { verified: true } }
-              );
-              if(admin){
-                res.send(`<h1>  Email Verification is Successfull for user account as admin</h1>`)
-              }
-              if(!admin||!customer){
-                res.send(`<h1>  Invalid Token</h1>`)
-              }
-                
-        } catch (err) {
-          res.status(500).json({ "Error": "Server Error in email verification" });
         }
-      })
+
+        const admin = await Admin.findOneAndUpdate(
+            { email },
+            { $set: { verified: true } }
+        );
+        if (admin) {
+            res.send(`<h1>  Email Verification is Successfull for user account as admin</h1>`)
+        }
+        if (!admin || !customer) {
+            res.send(`<h1>  Invalid Token</h1>`)
+        }
+
+    } catch (err) {
+        res.status(500).json({ "Error": "Server Error in email verification" });
+    }
+})
 
 module.exports = router;
